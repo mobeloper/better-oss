@@ -152,8 +152,8 @@ branch, or pipe a hook command into the script (see [AGENTS.md](AGENTS.md)).
 - Fill in the pull request template. It asks how you tested and how AI was used.
 - **What CI checks.** Branch names are a convention that keeps the history
   readable; CI does not check them. CI runs `ruff` and `pytest` (Python 3.9 and
-  3.13), the personal-data and symlink check, and the installer tests (Node 18 and
-  22). Run the same commands from "Before you open a pull request" so your pull
+  3.13), the personal-data and symlink check, `actionlint` over the workflows,
+  and the installer tests (Node 18 and 22). Run the same commands from "Before you open a pull request" so your pull
   request is green the first time.
 
 ## Changing a rubric
