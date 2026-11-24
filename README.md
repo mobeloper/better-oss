@@ -120,12 +120,11 @@ More in [docs/architecture.md](docs/architecture.md).
 
 ## Roadmap
 
-The path to the first production release, and where to help, is in
+v0.1.0 is released. The path to v0.2.0 (enforcing the contribution rules and the
+evals in CI, fully testing the hooks, a self-verifying release) and what comes
+after it (Windows support, more examples, a standalone CLI) is in
 [docs/ROADMAP.md](docs/ROADMAP.md); every item is a
-[GitHub issue](https://github.com/mobeloper/better-oss/issues). In short: get CI
-green and enforced, test the hooks without a real model, gate rubric changes with
-the evals, release `better-oss-cli` through the automated workflow, and then
-Windows support and a standalone CLI.
+[GitHub issue](https://github.com/mobeloper/better-oss/issues).
 
 ## Contributing
 
