@@ -56,6 +56,23 @@ jobs:
           LEAK_ALLOW_FILES: ${{ secrets.LEAK_ALLOW_FILES }}
         run: python scripts/leak_check.py
 
+  plugin:
+    name: Plugin manifest and skills
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # The validator lives in the CLI and needs no login or API key; a warning
+      # (such as the missing listing icon) is not a failure.
+      - name: Install the Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate the plugin manifest
+        run: claude plugin validate .
+      - name: Validate the skills
+        run: claude plugin validate skills
+
   installer:
     name: Installer (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
