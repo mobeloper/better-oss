@@ -145,6 +145,12 @@ for your approval.
 
 ## CI
 
+Workflows pin every action to a full commit SHA with the tag in a trailing
+comment, for example `uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0`.
+A tag can move; the SHA cannot, and `release.yml` publishes to npm with an
+OIDC token. Dependabot still proposes updates for the `github-actions` ecosystem:
+when you take one, update the SHA and the comment together.
+
 `ci.yml` runs on every push to `main` and every pull request: `ruff` and `pytest`
 on Python 3.9 and 3.13, the installer tests on Node 18 and 22, and the leak
 check. After it has run once, require these checks in the `main` branch rule:
