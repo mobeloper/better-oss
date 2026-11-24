@@ -1,0 +1,21 @@
+# Run `pre-commit install` once, then these checks run on every commit.
+# `pre-commit run --all-files` checks the whole tree.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.6
+    hooks:
+      - id: ruff
+
+  - repo: local
+    hooks:
+      - id: leak-check
+        name: personal data and symlinks
+        entry: python3 scripts/leak_check.py
+        language: system
+        pass_filenames: false
+
+      - id: pytest
+        name: pytest
+        entry: python3 -m pytest -q
+        language: system
+        pass_filenames: false

@@ -26,6 +26,19 @@ are welcome; see [SUPPORT.md](SUPPORT.md).
 
 Issues labelled `good first issue` and `help wanted` are good places to start.
 
+## Development setup
+
+The scripts need Python 3.9+ and the standard library only; the installer needs
+Node 18+. Install the checks once:
+
+```sh
+python3 -m pip install --upgrade pip ruff pytest pre-commit
+pre-commit install          # run the hooks on every commit
+pre-commit run --all-files  # or check the whole tree now
+```
+
+The hooks run `ruff`, the personal-data and symlink check, and `pytest`.
+
 ## What must not go in a contribution
 
 Everything you add here is public and permanent, and the people who install
