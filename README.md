@@ -104,7 +104,8 @@ For a whole run on a real issue, see the [worked example](examples/walkthrough.m
   text, `pr-precheck` accepts a description that quotes that rule instead of
   demanding a disclosure.
 
-More in [docs/architecture.md](docs/architecture.md).
+More in [docs/architecture.md](docs/architecture.md). If something is not
+working, see [docs/troubleshooting.md](docs/troubleshooting.md).
 
 ## Limits
 

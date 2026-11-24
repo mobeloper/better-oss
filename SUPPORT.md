@@ -9,6 +9,9 @@
   [SECURITY.md](SECURITY.md).
 - **A conduct concern:** see [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
+Common problems and their fixes are in
+[docs/troubleshooting.md](docs/troubleshooting.md).
+
 Before you ask, `python3 core/init.py --check` (or `/better-oss:init --check`
 inside Claude Code) prints whether `git`, `gh`, `claude` and your `gh` login are
 all in place; most setup problems show up there.
