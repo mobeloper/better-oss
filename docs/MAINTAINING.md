@@ -131,6 +131,15 @@ for your approval.
   `mobeloper/better-oss`, workflow `release.yml` and environment `npm-publish`.
   The workflow uses Node 24 because trusted publishing needs a recent npm. Check
   npm's current documentation when you set it up, as this feature is new.
+- **If the publish job fails with `E403 ... OIDC permission denied`.** The
+  workflow got its token and npm refused it, which means the Trusted Publisher
+  entry does not match. Nothing was published. Compare the entry on the package's
+  Settings page with what this workflow presents: owner `mobeloper`, repository
+  `better-oss`, workflow `release.yml` (the file name only, not the path),
+  environment `npm-publish`. A wrong environment name, a path in the workflow
+  field, or an entry saved on another package are the usual causes. After fixing
+  it, open the failed run, choose *Re-run failed jobs*, and approve the
+  `npm-publish` deployment again; no new tag or version is needed.
 - **Manual fallback.** If the workflow's publish step is not set up, publish by
   hand from `cli/` after the tag exists; the rest of the release is unchanged.
 
