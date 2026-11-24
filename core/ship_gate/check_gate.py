@@ -1217,6 +1217,27 @@ NO_TEXT_MSG = ("no PR text to check. The ship-gate stops gh pr create "
                "needs doing.")
 
 
+def command_cwd(tokens: list[str], upto: int, cwd: str):
+    """Return the folder a leading `cd DIR &&` (or `;`) changes to.
+
+    Only a `cd` before the gh command counts; anything uncertain leaves the
+    hook input's cwd in place, so a stop that should stay a stop still does.
+    """
+    base = Path(cwd or ".")
+    i = 0
+    while i + 1 < upto:
+        if tokens[i] == "cd":
+            target = tokens[i + 1]
+            j = i + 2
+            if j < upto and tokens[j] in ("&&", ";"):
+                candidate = Path(target).expanduser()
+                base = candidate if candidate.is_absolute() else base / candidate
+                i = j + 1
+                continue
+        i += 1
+    return base
+
+
 def parse_pr_flags(tokens: list[str], start: int, cwd: str) -> dict:
     """Return the draft and branch flags of a gh pr create command, or a
     problem string when the form carries no text the gate can read."""
@@ -1261,11 +1282,13 @@ def parse_pr_flags(tokens: list[str], start: int, cwd: str) -> dict:
                 out["problem"] = ("--body-file - reads stdin, which the "
                                   "ship-gate can't see. Use a real file.")
                 return out
+            base = Path(cwd or ".")
             try:
-                out["body"] = (Path(cwd or ".") / path).read_text(
+                out["body"] = (base / path).read_text(
                     encoding="utf-8", errors="replace")
             except OSError as e:
-                out["problem"] = f"could not read the body file: {e}"
+                out["problem"] = (f"could not read the body file: {e} "
+                                  f"(searched {base})")
                 return out
         elif t in ("--head", "-H"):
             out["head"] = value(i)
@@ -1320,7 +1343,7 @@ def hook_main() -> int:
     start = find_pr_create(tokens)
     if start is None:
         return 0
-    cwd = payload.get("cwd") or os.getcwd()
+    cwd = str(command_cwd(tokens, start, payload.get("cwd") or os.getcwd()))
     flags = parse_pr_flags(tokens, start, cwd)
     if flags["problem"]:
         report = Report("hook")

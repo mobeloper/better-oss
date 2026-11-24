@@ -111,6 +111,27 @@ def find_comment_command(tokens: list[str]):
     return None
 
 
+def command_cwd(tokens: list[str], upto: int, cwd: str):
+    """Return the folder a leading `cd DIR &&` (or `;`) changes to.
+
+    Only a `cd` before the gh command counts; anything uncertain leaves the
+    hook input's cwd in place, so a stop that should stay a stop still does.
+    """
+    base = Path(cwd or ".")
+    i = 0
+    while i + 1 < upto:
+        if tokens[i] == "cd":
+            target = tokens[i + 1]
+            j = i + 2
+            if j < upto and tokens[j] in ("&&", ";"):
+                candidate = Path(target).expanduser()
+                base = candidate if candidate.is_absolute() else base / candidate
+                i = j + 1
+                continue
+        i += 1
+    return base
+
+
 def extract_body(tokens: list[str], start: int, cwd: str):
     """Return (body, problem). Exactly one is None."""
     i = start
@@ -135,17 +156,21 @@ def extract_body(tokens: list[str], start: int, cwd: str):
                     return None, ("--body-file - reads stdin, which the "
                                   "guard cannot see. Post from a real "
                                   "file.")
+                base = Path(cwd or ".")
                 try:
-                    return (Path(cwd or ".") / path).read_text(), None
+                    return (base / path).read_text(), None
                 except OSError as e:
-                    return None, f"could not read the body file: {e}"
+                    return None, (f"could not read the body file: {e} "
+                                  f"(searched {base})")
             return None, "--body-file has no value the guard can read."
         if t.startswith("--body-file="):
             path = t.split("=", 1)[1]
+            base = Path(cwd or ".")
             try:
-                return (Path(cwd or ".") / path).read_text(), None
+                return (base / path).read_text(), None
             except OSError as e:
-                return None, f"could not read the body file: {e}"
+                return None, (f"could not read the body file: {e} "
+                              f"(searched {base})")
         i += 1
     return None, ("no body the guard can read (interactive and --help "
                   "forms are stopped on purpose). Write "
@@ -264,7 +289,8 @@ def hook_main() -> int:
     if start is None:
         return 0
     target = " ".join(tokens[start - 3:start + 2])
-    body, problem = extract_body(tokens, start, payload.get("cwd", "."))
+    base = command_cwd(tokens, start, payload.get("cwd", "."))
+    body, problem = extract_body(tokens, start, str(base))
     if body is None:
         return stop(problem, "hook", target,
                     f"stop: {problem.split('.', 1)[0]}")
