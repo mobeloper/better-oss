@@ -60,6 +60,61 @@ jobs:
           case "$TAG" in *-*) flags="--prerelease";; esac
           gh release create "$TAG" --verify-tag --title "$TAG" --notes-file notes.md $flags
 
+  smoke:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+      - name: Wait for the registry to serve the version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          for _ in $(seq 1 60); do
+            if npm view "better-oss-cli@$version" version >/dev/null 2>&1; then
+              echo "registry serves better-oss-cli@$version"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "better-oss-cli@$version was not served by the registry after 10 minutes" >&2
+          exit 1
+      - name: Run the published package
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          got="$(npx --yes "better-oss-cli@$version" --version)"
+          if [ "$got" != "$version" ]; then
+            echo "published package reports '$got', tag is '$version'" >&2
+            exit 1
+          fi
+      - name: init copies the example files
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          home="$(mktemp -d)"
+          npx --yes "better-oss-cli@$version" init --no-plugin --home "$home"
+          for file in fit-profile.md search-strategy.md voice-guide.md playbook.md; do
+            if [ ! -f "$home/$file" ]; then
+              echo "init did not create $file" >&2
+              exit 1
+            fi
+          done
+      - name: Install the plugin from the marketplace
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          export CLAUDE_CONFIG_DIR="$(mktemp -d)"
+          claude plugin install better-oss --marketplace mobeloper/better-oss
+          claude plugin list | grep -q "better-oss"
+
   publish:
     needs: verify
     runs-on: ubuntu-latest

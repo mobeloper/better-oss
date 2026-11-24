@@ -143,6 +143,20 @@ for your approval.
 - **Manual fallback.** If the workflow's publish step is not set up, publish by
   hand from `cli/` after the tag exists; the rest of the release is unchanged.
 
+## Release smoke test
+
+After the publish job, the `smoke` job checks what was just published:
+
+1. waits for the registry to serve the tag's version (up to 10 minutes);
+2. runs `npx better-oss-cli@<version> --version` and compares it with the tag;
+3. runs `init --no-plugin --home <temp>` and checks the four example files exist;
+4. installs the plugin from `mobeloper/better-oss` into a throwaway
+   `CLAUDE_CONFIG_DIR` and checks `claude plugin list`.
+
+A failure is loud and does not unpublish anything; fix the package and publish a
+new tag. If the plugin step starts needing a login, stop the job and document the
+credential instead of letting it pass silently.
+
 ## CI
 
 Workflows pin every action to a full commit SHA with the tag in a trailing
